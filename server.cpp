@@ -3,12 +3,20 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
-#include <thread>
 #include <arpa/inet.h>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <vector>
 
 #define PORT 8080
 
 using namespace std;
+
+queue<int> task_queue;
+mutex queue_mutex;
+condition_variable condition;
 
 void handle_client(int socket_fd){
     char buffer[1024] = {0};
@@ -30,14 +38,27 @@ void handle_client(int socket_fd){
     send(socket_fd,msg,strlen(msg),0);
     cout<<"HTTP message sent to client: "<<msg<<endl;
 
-    
     close(socket_fd);
+}
+
+void worker_thread(){
+    while(true){
+        int socket_fd;
+        {
+            unique_lock<mutex> lock(queue_mutex);
+            condition.wait(lock,[]{return !task_queue.empty();});
+            socket_fd = task_queue.front();
+            task_queue.pop();
+        }
+        handle_client(socket_fd);
+    }
 }
 
 int main(){
     int server_fd;
     struct sockaddr_in address;
     socklen_t addrlen = sizeof(address);
+    const int THREAD_POOL_SIZE = 4;
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if(server_fd == 0){
@@ -60,14 +81,26 @@ int main(){
     }
     cout<<"Server is listening to port "<<PORT<<endl;
 
+    vector<thread> threads;
+    for(int i=0;i<THREAD_POOL_SIZE;i++){
+        threads.emplace_back(worker_thread);
+    }
+
     while(true){
         int socket_fd = accept(server_fd, (struct sockaddr*)&address, &addrlen);
         if(socket_fd < 0){
             cerr<<"Accept failed"<<endl;
             continue;
         } 
-        thread client_thread(handle_client, socket_fd);
-        client_thread.detach();
+        {
+            lock_guard<mutex> lock(queue_mutex);
+            task_queue.push(socket_fd);
+        }
+        condition.notify_one();
+    }
+
+    for(thread &t:threads){
+        t.join();
     }
 
     close(server_fd);
