@@ -30,5 +30,6 @@ void ThreadPool::worker_thread(){
             socket_fd = task_queue.front();
             task_queue.pop();
         }
+        handler.handle_client(socket_fd);
     }
 }
