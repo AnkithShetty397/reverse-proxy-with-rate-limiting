@@ -13,8 +13,8 @@ ClientHandler::ClientHandler(RateLimiter& limiter): rate_limiter(limiter){}
 
 void ClientHandler::handle_client(int socket_fd){
     char buffer[BUFFER_SIZE]={0};
-    const char* msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-length: 19\n\nHello from server";
-    const char* rate_limit_msg = "HTTP/1.1 429 Too Many Requests\nContent-Type: text/plain\nContent-length: 30\n\nRate limit exceeded";
+    const char* msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-length: 19\n\nHello from server\n";
+    const char* rate_limit_msg = "HTTP/1.1 429 Too Many Requests\nContent-Type: text/plain\nContent-length: 30\n\nRate limit exceeded\n";
 
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
