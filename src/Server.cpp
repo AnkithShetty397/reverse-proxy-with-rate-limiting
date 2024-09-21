@@ -23,7 +23,7 @@ Server::Server(ThreadPool& pool): thread_pool(pool), addrlen(sizeof(address)){
     if(listen(server_fd, 3)<0){
         throw std::runtime_error("Listen failed");
     }
-    std::cout<<"Server is listening on port"<<PORT<<std::endl;
+    std::cout<<"Server is listening on port "<<PORT<<std::endl;
 }
 
 Server::~Server(){
@@ -37,6 +37,7 @@ void Server::run(){
             std::cerr<<"Accepted failed"<<std::endl;
             continue;
         }
+        std::cout<<"new connection received"<<std::endl;
         thread_pool.add_task(socket_fd);
     }
 }
