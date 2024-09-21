@@ -1,5 +1,5 @@
-#ifndef CLIENTHANDLER_HPP
-#define CLIENTHANDLER_HPP
+#ifndef RATELIMITER_HPP
+#define RATELIMITER_HPP
 
 #include <unordered_map>
 #include <deque>
