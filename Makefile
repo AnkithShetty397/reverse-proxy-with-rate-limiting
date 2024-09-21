@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Iinclude
 
 # Source files
-SRCS = src/main.cpp src/Server.cpp src/ThreadPool.cpp src/ClientHandler.cpp src/RateLimiter.cpp
+SRCS = src/main.cpp src/Server.cpp src/ThreadPool.cpp src/ClientHandler.cpp src/RateLimiter.cpp src/ReverseProxy.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

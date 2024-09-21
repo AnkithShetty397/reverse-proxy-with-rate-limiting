@@ -37,7 +37,6 @@ void Server::run(){
             std::cerr<<"Accepted failed"<<std::endl;
             continue;
         }
-        std::cout<<"new connection received"<<std::endl;
         thread_pool.add_task(socket_fd);
     }
 }
