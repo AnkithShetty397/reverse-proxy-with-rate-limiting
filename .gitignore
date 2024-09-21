@@ -1,6 +1,31 @@
-server
-ClientHandler.o
-main.o
-Server.o
-RateLimiter.o
-ThreadPool.o
+# Ignore object files
+*.o
+
+# Ignore binary files
+internal_server/internal_server
+
+# Ignore build artifacts
+build/
+bin/
+*.exe
+
+# Ignore Makefile generated files
+Makefile.old
+*.d
+
+# Ignore logs
+*.log
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore IDE files
+*.idea/
+*.vscode/
+*.swp
+*.swo
+
+# Ignore other common files
+*.DS_Store
+*.bak
