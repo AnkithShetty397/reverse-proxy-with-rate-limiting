@@ -32,7 +32,7 @@ void handle_client(int socket_fd){
     char buffer[1024] = {0};
     const char *msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-length: 19\n\nHello from server";
     const char *rate_limit_msg = "HTTP/1.1 429 Too Many Requests\nContent-Type: text/plain\nContent-length: 30\n\nRate limit exceeded";
-    
+
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
 
@@ -63,6 +63,8 @@ void handle_client(int socket_fd){
         }
     }else{
         cerr<<"Failed to fetch the IP address"<<endl;
+        close(socket_fd);
+        return;
     }
 
     ssize_t bytes_read = read(socket_fd,buffer,1024);
@@ -73,9 +75,13 @@ void handle_client(int socket_fd){
     }
     cout<<"Message received: "<<buffer<<endl;
 
-    send(socket_fd,msg,strlen(msg),0);
-    cout<<"HTTP message sent to client: "<<msg<<endl;
-
+    ssize_t bytes_sent = send(socket_fd,msg,strlen(msg),0);
+    if(bytes_sent<0){
+        cerr<<"Error sending response to client"<<endl;
+    }else{
+        cout<<"HTTP message sent to client: "<<msg<<endl;
+    }
+    
     close(socket_fd);
 }
 
