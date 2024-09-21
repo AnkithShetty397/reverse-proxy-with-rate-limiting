@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+RateLimiter::RateLimiter(){}
+
 bool RateLimiter::is_rate_limited(const string& client_ip){
     lock_guard<mutex> lock(rate_limit_mutex);
     auto now = chrono::steady_clock::now();
@@ -10,7 +12,7 @@ bool RateLimiter::is_rate_limited(const string& client_ip){
     if(request_map.find(client_ip)!=request_map.end()){
         auto& timestamps = request_map[client_ip];
 
-        while(!timestamps.empty() && chrono::duration_cast<chrono::seconds>(now-timestamps.front()).count()<WINDOW_SIZE){
+        while(!timestamps.empty() && chrono::duration_cast<chrono::seconds>(now-timestamps.front()).count()>=WINDOW_SIZE){
             timestamps.pop_front();
         }
 
