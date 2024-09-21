@@ -14,7 +14,6 @@ ClientHandler::ClientHandler(RateLimiter& limiter): rate_limiter(limiter){}
 
 void ClientHandler::handle_client(int socket_fd){
     char buffer[BUFFER_SIZE]={0};
-    const char* msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-length: 19\n\nHello from server\n";
     const char* rate_limit_msg = "HTTP/1.1 429 Too Many Requests\nContent-Type: text/plain\nContent-length: 30\n\nRate limit exceeded\n";
 
     struct sockaddr_in client_addr;
@@ -35,13 +34,14 @@ void ClientHandler::handle_client(int socket_fd){
         return;
     }
 
+    cout<<"Accepted"<<endl;
+
     ssize_t bytes_read = read(socket_fd,buffer,BUFFER_SIZE);
     if(bytes_read<0){
         cerr<<"Error reading from socket"<<endl;
         close(socket_fd);
         return;
     }
-    cout<<"Message received: "<<buffer<<endl;
 
     int internal_server_fd;
     ReverseProxy proxy(INTERNAL_SERVER_IP,INTERNAL_SERVER_PORT);
