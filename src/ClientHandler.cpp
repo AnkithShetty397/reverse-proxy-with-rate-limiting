@@ -1,4 +1,5 @@
 #include "../include/ClientHandler.hpp"
+#include "../include/ReverseProxy.hpp"
 #include "../config.hpp"
 
 #include <iostream>
@@ -42,12 +43,22 @@ void ClientHandler::handle_client(int socket_fd){
     }
     cout<<"Message received: "<<buffer<<endl;
 
-    ssize_t bytes_sent = send(socket_fd,msg,strlen(msg),0);
-    if(bytes_sent<0){
-        cerr<<"Error sending response to client"<<endl;
-    }else{
-        cout<<"Response sent to the client"<<endl;
+    int internal_server_fd;
+    ReverseProxy proxy(INTERNAL_SERVER_IP,INTERNAL_SERVER_PORT);
+    if(!proxy.forward_request(internal_server_fd,buffer)){
+        cerr<<"Failed to forward request to internal server."<<endl;
+        close(socket_fd);
+        close(internal_server_fd);
+        return;
     }
 
+    if(!proxy.relay_response(internal_server_fd, socket_fd)){
+        cerr<<"Failed to relay response to client."<<endl;
+        close(socket_fd);
+        close(internal_server_fd);
+        return;
+    }
+
+    close(internal_server_fd);
     close(socket_fd);
 }
