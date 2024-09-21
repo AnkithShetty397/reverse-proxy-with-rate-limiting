@@ -1,6 +1,8 @@
 # Ignore object files
 *.o
 
+server
+
 # Ignore binary files
 internal_server/internal_server
 
