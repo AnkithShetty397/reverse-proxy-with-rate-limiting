@@ -39,8 +39,20 @@ int main(){
             continue;
         }     
 
-        const char* response = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 22\n\nHello from internal server!";
+        char buffer[1024] = {0};
+        int bytes_read = read(client_fd,buffer,1024);
+
+        cout<<"Received request: "<<endl;
+        cout<<buffer<<endl;
+
+        const char* response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-Length: 26\r\n"
+            "\r\n"
+            "Hello from internal server!";
         send(client_fd, response, strlen(response),0);
+        
         close(client_fd);
     }
 

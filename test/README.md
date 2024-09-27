@@ -39,7 +39,6 @@ The script covers the following tests:
 - The server should be compiled and started prior to running the tests.
 
 ## Usage
-
 ### Running the Test Suite
 
 1. Navigate to the `test/` directory:
@@ -53,10 +52,3 @@ The script covers the following tests:
 3. Run the test script:
    ```bash
    ./test.sh
-
-### Expected output
-
-- For Test 1 (Basic Connectivity): You should see a success message confirming that the server responded with `200 OK`
-- For Test 2 (Rate Limiting): The first 6 requests should succeed, and the rest should trigger the rate limit response (e.g., `Rate limit exceeded`).
-- For Test 3 (Sustained Requests): All requests should succeed as they are spaced to avoid the rate limit window.
-- For Test 4 (Burst Test): You should see some requests succeed initially, followed by rate-limit exceeded messages for subsequent requests.

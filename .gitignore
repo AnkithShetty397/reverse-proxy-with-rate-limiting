@@ -4,6 +4,7 @@
 # Ignore binary files
 internal_server/internal_server
 internal_server/internal_server.o
+server
 
 # Ignore build artifacts
 build/

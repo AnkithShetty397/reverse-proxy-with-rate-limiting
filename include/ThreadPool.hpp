@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-#include "ClientHandler.hpp"
+#include "SSLClientHandler.hpp"
 
 using namespace std;
 
@@ -17,10 +17,10 @@ private:
     mutex queue_mutex;
     condition_variable condition;
     vector<thread> threads;
-    ClientHandler& handler;
+    SSLClientHandler& handler;
 
 public:
-    ThreadPool(ClientHandler& handler);
+    ThreadPool(SSLClientHandler& handler);
     ~ThreadPool();
     void add_task(int socket_fd);
 

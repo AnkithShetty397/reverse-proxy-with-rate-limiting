@@ -15,11 +15,9 @@ Server::Server(ThreadPool& pool): thread_pool(pool), addrlen(sizeof(address)){
     address.sin_family = AF_INET;
     address.sin_port = htons(PORT);
     address.sin_addr.s_addr = htonl(INADDR_ANY);
-
     if(bind(server_fd,(struct sockaddr*)&address,sizeof(address))<0){
         throw std::runtime_error("Bind failed");
     }
-
     if(listen(server_fd, 3)<0){
         throw std::runtime_error("Listen failed");
     }
@@ -34,7 +32,7 @@ void Server::run(){
     while(true){
         int socket_fd = accept(server_fd,(struct sockaddr*)&address,&addrlen);
         if(socket_fd<0){
-            std::cerr<<"Accepted failed"<<std::endl;
+            std::cerr<<"Accept failed"<<std::endl;
             continue;
         }
         thread_pool.add_task(socket_fd);

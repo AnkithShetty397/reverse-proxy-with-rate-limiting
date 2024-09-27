@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Server address and port
-URL="http://localhost:8080"
+# Server address and port (using HTTPS and the correct port for TLS)
+URL="https://localhost:8443"
 DATA="DoS Attack"
 
-# Test 1: Basic Connectivity Test
-echo "Running Basic Connectivity Test..."
-response=$(curl -s -o /dev/null -w "%{http_code}" -X POST $URL -d "$DATA")
+# Test 1: Basic Connectivity Test (HTTPS)
+echo "Running Basic Connectivity Test (HTTPS)..."
+response=$(curl -k -s -o /dev/null -w "%{http_code}" -X POST $URL -d "$DATA")
 if [ "$response" -eq 200 ]; then
     echo "Test 1: Passed - Server responded with 200 OK"
 else
@@ -16,10 +16,10 @@ echo
 
 # Test 2: Rate Limiting Test (6 requests in 2 seconds allowed)
 echo "Running Rate Limiting Test..."
-for i in {1..8}
+for i in {1..10}
 do
     echo "Request $i:"
-    curl -X POST $URL -d "$DATA" -w "\n" -s &
+    curl -k -X POST $URL -d "$DATA" -w "\n" -s &
 done
 
 wait
@@ -34,7 +34,7 @@ echo "Running Sustained Requests Test (Over time)..."
 for i in {1..12}
 do
     echo "Request $i:"
-    curl -X POST $URL -d "$DATA" -w "\n" -s &
+    curl -k -X POST $URL -d "$DATA" -w "\n" -s &
     
     # Pause for 1 second between requests (below WINDOW_SIZE to avoid hitting rate limit)
     sleep 1
@@ -49,7 +49,7 @@ echo "Running Burst Test (Exceeding rate limit)..."
 for i in {1..10}
 do
     echo "Burst Request $i:"
-    curl -X POST $URL -d "$DATA" -w "\n" -s &
+    curl -k -X POST $URL -d "$DATA" -w "\n" -s &
 done
 
 wait

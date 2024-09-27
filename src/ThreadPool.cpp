@@ -1,7 +1,7 @@
 #include "../include/ThreadPool.hpp"
 #include "../config.hpp"
 
-ThreadPool::ThreadPool(ClientHandler& handler): handler(handler){
+ThreadPool::ThreadPool(SSLClientHandler& handler): handler(handler){
     for(int i=0;i<THREAD_POOL_SIZE;i++){
         threads.emplace_back(&ThreadPool::worker_thread, this);
     }

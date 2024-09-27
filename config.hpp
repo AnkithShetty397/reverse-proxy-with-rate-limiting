@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#define PORT 8080
+#define PORT 8443
 #define THREAD_POOL_SIZE 4
 #define BUFFER_SIZE 1024
 #define WINDOW_SIZE 2
