@@ -57,7 +57,7 @@ SSL* SSLHandler::create_ssl_connection(int socket_fd){
         return NULL;
     }
 
-    cout << "SSL connection established successfully" << endl;
+    //cout << "SSL connection established successfully" << endl;
     return ssl;
 }
 

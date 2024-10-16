@@ -8,5 +8,6 @@
 #define REQUEST_LIMIT 6
 #define INTERNAL_SERVER_IP "127.0.0.1"
 #define INTERNAL_SERVER_PORT 8081
+#define REDIS_CACHE_TTL 10 
 
 #endif

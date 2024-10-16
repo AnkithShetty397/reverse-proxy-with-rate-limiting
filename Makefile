@@ -4,12 +4,13 @@ CXX = g++
 # Compiler flags
 CXXFLAGS = -std=c++11 -Iinclude
 
-# Linker flags for OpenSSL
-LDFLAGS = -lssl -lcrypto
+# Linker flags for OpenSSL and Redis (if required)
+LDFLAGS = -lssl -lcrypto -lhiredis
 
 # Source files
 SRCS = src/main.cpp \
        src/RateLimiter.cpp \
+       src/RedisConnection.cpp \
        src/ReverseProxy.cpp \
        src/Server.cpp \
        src/SSLClientHandler.cpp \
