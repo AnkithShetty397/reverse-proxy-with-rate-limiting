@@ -28,79 +28,65 @@ void SSLClientHandler::handle_client(int socket_fd){
         "\r\n"
         "Rate limit exceeded\n";
 
-    struct sockaddr_in client_addr;
-    socklen_t client_addr_len = sizeof(client_addr);
-
-    if(getpeername(socket_fd,(struct sockaddr*)&client_addr,&client_addr_len)==0){
-        string client_ip = inet_ntoa(client_addr.sin_addr);
-
-        if(rate_limiter.is_rate_limited(client_ip)){
-            SSL_write(ssl, rate_limit_msg, strlen(rate_limit_msg));
-            cout<<"Blocked: "<<client_ip<<endl;
-            SSL_shutdown(ssl);
-            SSL_free(ssl);
-            close(socket_fd);
-            return;
+    while(true){
+        ssize_t bytes_read = SSL_read(ssl,buffer,BUFFER_SIZE);
+        if(bytes_read <= 0){
+            if(bytes_read == 0 || SSL_get_error(ssl,bytes_read) == SSL_ERROR_ZERO_RETURN){
+                cout<<"Client closed connection."<<endl;
+            }else{
+                cerr<<"Error reading from the SSL socket."<<endl;
+            }
+            break;
         }
-    }else{
-        cerr<<"Failed to fetch the IP address"<<endl;
-        SSL_shutdown(ssl);
-        SSL_free(ssl);
-        close(socket_fd);
-        return;
-    }
+        
+        buffer[bytes_read]='\0';
 
-    //cout<<"Accepted SSL connection"<<endl;
+        struct sockaddr_in client_addr;
+        socklen_t client_addr_len = sizeof(client_addr);
 
-    ssize_t bytes_read = SSL_read(ssl, buffer, BUFFER_SIZE);
-    if(bytes_read < 0){
-        cerr<<"Error reading from SSL socket"<<endl;
-        SSL_shutdown(ssl);
-        SSL_free(ssl);
-        close(socket_fd);
-        return;
-    }
+        if(getpeername(socket_fd,(struct sockaddr*)&client_addr,&client_addr_len)==0){
+            string client_ip = inet_ntoa(client_addr.sin_addr);
 
-    RedisConnection& redis_conn = RedisConnection::getInstance();
-    string cached_response = redis_conn.getCache(buffer);
-
-    int internal_server_fd;
-
-    if(!cached_response.empty()){
-        SSL_write(ssl, cached_response.c_str(), cached_response.size());
-        cout << "Served from cache"<< endl;
-    }else{
-        ReverseProxy proxy(INTERNAL_SERVER_IP, INTERNAL_SERVER_PORT);
-        if(!proxy.forward_request(internal_server_fd, buffer)){
-            cerr<<"Failed to forward request to the internal server."<<endl;
-            SSL_shutdown(ssl);
-            SSL_free(ssl);
-            close(socket_fd);
-            return;
+            if(rate_limiter.is_rate_limited(client_ip)){
+                SSL_write(ssl, rate_limit_msg, strlen(rate_limit_msg));
+                cout<<"Blocked: "<<client_ip<<endl;
+                continue;
+            }
+        }else{
+            cerr<<"Failed to fetch the IP address"<<endl;
+            break;
         }
 
-        char response_buffer[BUFFER_SIZE] = {0};
-        ssize_t response_bytes = recv(internal_server_fd, response_buffer, BUFFER_SIZE, 0);
-        if(response_bytes < 0){
-            cerr<<"Failed to receive response from internal server."<<endl;
-            SSL_shutdown(ssl);
-            SSL_free(ssl);
-            close(socket_fd);
-            close(internal_server_fd);
-            return;
-        }
+        RedisConnection& redis_conn = RedisConnection::getInstance();
+        string cached_response = redis_conn.getCache(buffer);
 
-        if(SSL_write(ssl, response_buffer, response_bytes) < 0){
-            cerr<<"Failed to relay response to client."<<endl;
-            SSL_shutdown(ssl);
-            SSL_free(ssl);
-            close(socket_fd);
-            close(internal_server_fd);
-            return;
-        }
+        int internal_server_fd;
 
-        redis_conn.setCache(buffer, string(response_buffer, response_bytes));
-        cout<<"Cached"<<endl;
+        if(!cached_response.empty()){
+            SSL_write(ssl, cached_response.c_str(), cached_response.size());
+            cout << "Served from cache"<< endl;
+        }else{
+            ReverseProxy proxy(INTERNAL_SERVER_IP, INTERNAL_SERVER_PORT);
+            if(!proxy.forward_request(internal_server_fd, buffer)){
+                cerr<<"Failed to forward request to the internal server."<<endl;
+                break;
+            }
+
+            char response_buffer[BUFFER_SIZE] = {0};
+            ssize_t response_bytes = recv(internal_server_fd, response_buffer, BUFFER_SIZE, 0);
+            if(response_bytes <= 0){
+                cerr<<"Failed to receive response from internal server."<<endl;
+                break;
+            }
+
+            if(SSL_write(ssl, response_buffer, response_bytes) < 0){
+                cerr<<"Failed to relay response to client."<<endl;
+                break;
+            }
+
+            redis_conn.setCache(buffer, string(response_buffer, response_bytes));
+            cout<<"Cached"<<endl;
+        }
     }
 
     SSL_shutdown(ssl);
