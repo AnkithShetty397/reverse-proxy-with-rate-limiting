@@ -13,6 +13,7 @@ private:
 public:
     SSLClientHandler(RateLimiter& limiter, SSLHandler& sshandler);
     void handle_client(int socket_fd);
+    string extract_url(const char* buffer);
 };
 
 #endif

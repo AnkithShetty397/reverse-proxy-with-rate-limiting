@@ -11,6 +11,22 @@
 
 using namespace std;
 
+string SSLClientHandler::extract_url(const char* buffer){
+    const char* method = "GET";
+    const char* http_version = " HTTP/1.1";
+
+    if(strncmp(buffer, method, strlen(method)) == 0){
+        const char* start = buffer + strlen(method);
+        const char* end = strstr(start, http_version);
+
+        if(end != NULL){
+            return string(start, end-start);
+        }
+    }
+
+    return "";
+}
+
 SSLClientHandler::SSLClientHandler(RateLimiter& limiter, SSLHandler& sslHandler): rate_limiter(limiter), ssl_handler(sslHandler) {}
 void SSLClientHandler::handle_client(int socket_fd){
     SSL* ssl = ssl_handler.create_ssl_connection(socket_fd);
@@ -27,6 +43,8 @@ void SSLClientHandler::handle_client(int socket_fd){
         "Content-Length: 20\r\n"
         "\r\n"
         "Rate limit exceeded\n";
+    
+    int internal_server_fd;
 
     while(true){
         ssize_t bytes_read = SSL_read(ssl,buffer,BUFFER_SIZE);
@@ -58,9 +76,8 @@ void SSLClientHandler::handle_client(int socket_fd){
         }
 
         RedisConnection& redis_conn = RedisConnection::getInstance();
-        string cached_response = redis_conn.getCache(buffer);
-
-        int internal_server_fd;
+        string key = extract_url(buffer);
+        string cached_response = redis_conn.getCache(key);
 
         if(!cached_response.empty()){
             SSL_write(ssl, cached_response.c_str(), cached_response.size());
@@ -84,8 +101,10 @@ void SSLClientHandler::handle_client(int socket_fd){
                 break;
             }
 
-            redis_conn.setCache(buffer, string(response_buffer, response_bytes));
-            cout<<"Cached"<<endl;
+            if(key != ""){
+                redis_conn.setCache(key, string(response_buffer, response_bytes));
+                cout<<"Cached"<<endl;
+            }
         }
     }
 
