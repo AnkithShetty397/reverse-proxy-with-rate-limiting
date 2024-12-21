@@ -5,8 +5,39 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
+#include <thread>
 
 using namespace std;
+
+void handle_request(int client_fd){
+    char buffer[1024];
+    while(true){
+        memset(buffer,0,1024);
+        int bytes_read = read(client_fd,buffer,1024);
+
+        if(bytes_read <= 0){
+            if(bytes_read == 0){
+                cout<<"Server disconnected."<<endl;
+            }else{
+                cerr<<"Error reading from client."<<endl;
+            }
+            break;
+        }
+
+        cout<<"Received request: "<<endl;
+        cout<<buffer<<endl;
+
+        const char* response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-Length: 26\r\n"
+            "\r\n"
+            "Hello from internal server!";
+        send(client_fd, response, strlen(response),0);
+    }
+
+    close(client_fd);
+}
 
 int main(){
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,32 +61,20 @@ int main(){
         return -1;
     } 
 
-    cout<<"Internal server is listening to port "<<PORT<<endl;
+    cout<<"Internal server is listening to port "<<PORT<<endl;   
 
-    while(true){
+    while(true){    
         int client_fd = accept(server_fd, NULL, NULL);
         if(client_fd < 0){
             cerr<<"Accept failed"<<endl;
             continue;
-        }     
+        }  
 
-        char buffer[1024] = {0};
-        int bytes_read = read(client_fd,buffer,1024);
+        cout<<"Connection established."<<endl;
 
-        cout<<"Received request: "<<endl;
-        cout<<buffer<<endl;
-
-        const char* response = 
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
-            "Content-Length: 26\r\n"
-            "\r\n"
-            "Hello from internal server!";
-        send(client_fd, response, strlen(response),0);
-        
-        close(client_fd);
+        thread client_thread(handle_request,client_fd);
+        client_thread.detach();
     }
 
-    close(server_fd);
     return 0;
 }
