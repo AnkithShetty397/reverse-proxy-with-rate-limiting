@@ -3,7 +3,7 @@
 
 #include "RateLimiter.hpp"
 #include "SSLHandler.hpp"
-#include "ReverseProxy.hpp"
+#include "ConnectionPool.hpp"
 
 class SSLClientHandler{
 private:

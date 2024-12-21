@@ -11,7 +11,7 @@ LDFLAGS = -lssl -lcrypto -lhiredis
 SRCS = src/main.cpp \
        src/RateLimiter.cpp \
        src/RedisConnection.cpp \
-       src/ReverseProxy.cpp \
+       src/ConnectionPool.cpp \
        src/Server.cpp \
        src/SSLClientHandler.cpp \
        src/SSLHandler.cpp \
