@@ -33,3 +33,8 @@ void ThreadPool::worker_thread(){
         handler.handle_client(socket_fd);
     }
 }
+
+size_t ThreadPool::get_queue_size(){
+    unique_lock<mutex> lock(queue_mutex);
+    return task_queue.size();
+}

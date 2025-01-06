@@ -23,6 +23,7 @@ public:
     ThreadPool(SSLClientHandler& handler);
     ~ThreadPool();
     void add_task(int socket_fd);
+    size_t get_queue_size();
 
 private:
     void worker_thread();

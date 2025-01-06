@@ -35,6 +35,11 @@ void Server::run(){
             std::cerr<<"Accept failed"<<std::endl;
             continue;
         }
+        if(thread_pool.get_queue_size() >= MAX_QUEUE_SIZE){
+            std::cout<<"Connection dropped due to high load"<<endl;
+            close(socket_fd);
+            continue;
+        }
         thread_pool.add_task(socket_fd);
     }
 }
