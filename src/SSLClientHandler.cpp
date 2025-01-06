@@ -129,6 +129,5 @@ void SSLClientHandler::handle_client(int socket_fd){
 
     SSL_shutdown(ssl);
     SSL_free(ssl);
-    close(internal_server_fd);
     close(socket_fd);
 }
