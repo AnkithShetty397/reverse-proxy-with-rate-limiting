@@ -19,4 +19,4 @@ The internal working of the Rate Limiter involves several key steps.
 
 The following diagram visualizes this process:
 
-![Request Processing Flow](./images/request_flow_diagram.png)
+![Request Processing Flow](./images/sequence_diagram.png)
